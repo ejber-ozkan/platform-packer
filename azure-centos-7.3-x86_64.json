@@ -1,0 +1,62 @@
+{
+    "variables": {
+        "client_id": "",
+        "client_secret": "",
+        "resource_group_name": "",
+        "storage_account": "",
+        "subscription_id": "",
+        "tenant_id": "",
+        "date": ""
+    },
+    "builders": [
+        {
+            "name": "azure-centos-7-x",
+            "type": "azure-arm",
+            "client_id": "{{user `client_id`}}",
+            "client_secret": "{{user `client_secret`}}",
+            "resource_group_name": "{{user `resource_group_name`}}",
+            "storage_account": "{{user `storage_account`}}",
+            "subscription_id": "{{user `subscription_id`}}",
+            "tenant_id": "{{user `tenant_id`}}",
+            "capture_container_name": "packer-images",
+            "capture_name_prefix": "packer",
+            "os_type": "Linux",
+            "image_publisher": "OpenLogic",
+            "image_offer": "CentOS",
+            "image_sku": "7.3",
+            "azure_tags": {
+                "dept": "platform technologies",
+                "packer-date": "{{user `date`}}"
+            },
+            "location": "UK West",
+            "vm_size": "Standard_A1"
+        }
+    ],
+    "provisioners": [
+        {
+            "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+            "inline": [
+                "yum update",
+                "yum upgrade -y"
+            ],
+            "inline_shebang": "/bin/sh -x",
+            "type": "shell"
+        },
+        {
+            "execute_command": "echo 'CentOS Azure Packer' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+            "scripts": [
+                "resources/centos/base-programs.sh"
+            ],
+            "type": "shell"
+        },
+        {
+            "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+            "inline": [
+                "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"
+            ],
+            "inline_shebang": "/bin/sh -x",
+            "type": "shell",
+            "skip_clean": true
+        }
+    ]
+}
