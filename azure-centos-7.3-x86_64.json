@@ -45,7 +45,7 @@
         {
             "execute_command": "echo 'CentOS Azure Packer' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
             "scripts": [
-                "resources/centos/base-programs.sh"
+                "resources/centos/bash/base-programs.sh"
             ],
             "type": "shell"
         },

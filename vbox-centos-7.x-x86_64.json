@@ -1,0 +1,72 @@
+{
+  "variables": {
+    "puppet_version": "nopuppet",
+    "mirror": "http://mirrors.kernel.org/centos",
+    "build_output_directory": "PackerWorkDir",
+    "provision_output_directory": "VagrantReady/CentOS"
+  },
+  "builders": [
+    {
+      "boot_command": [
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos-7.x/ks.cfg<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "disk_size": 40960,
+      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+      "guest_os_type": "RedHat_64",
+      "http_directory": "resources/centos/http",
+      "iso_checksum": "c455ee948e872ad2194bdddd39045b83634e8613249182b88f549bb2319d97eb",
+      "iso_checksum_type": "sha256",
+      "iso_url": "http://mirrors.ukfast.co.uk/sites/ftp.centos.org/7/isos/x86_64/CentOS-7-x86_64-DVD-1611.iso",
+      "output_directory": "{{user `build_output_directory`}}",
+      "shutdown_command": "echo 'vagrant'|sudo -S /sbin/halt -h -p",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_username": "vagrant",
+      "ssh_wait_timeout": "10000s",
+      "type": "virtualbox-iso",
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--memory",
+          "480"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--cpus",
+          "1"
+        ]
+      ],
+      "virtualbox_version_file": ".vbox_version",
+      "vm_name": "packer-centos-7.x-x86_64"
+    }
+  ],
+  "post-processors": [
+    {
+      "output": "{{user `provision_output_directory`}}/{{.Provider}}/centos-7.x.box",
+      "type": "vagrant"
+    }
+  ],
+  "provisioners": [
+    {
+      "environment_vars": [
+        "PUPPET_VERSION={{user `puppet_version`}}"
+      ],
+      "execute_command": "echo 'Vagrant provision with bash scripts' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "scripts": [
+        "resources/centos/bash/fix-slow-dns.sh",
+        "resources/centos/bash/sshd.sh",
+        "resources/centos/bash/disablefirewall.sh",
+        "resources/centos/bash/base-programs.sh",
+        "resources/centos/bash/vagrant.sh",
+        "resources/centos/bash/guestadditions.sh",
+        "resources/centos/bash/puppet.sh",
+        "resources/centos/bash/cleanup.sh",
+        "resources/centos/bash/minimize.sh"
+      ],
+      "type": "shell"
+    }
+  ]
+}

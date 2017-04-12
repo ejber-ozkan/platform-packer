@@ -6,6 +6,7 @@
 - [Creating images into AWS...](#creating-images-into-aws)
 - [Creating images into VMWare...](#creating-images-into-vmware)
 - [Creating images into VirtualBox...](#creating-images-into-virtualbox)
+    - [pre-requisties:](#pre-requisties-1)
 
 <!-- /TOC -->
 
@@ -93,3 +94,43 @@ az ad app list
 # Creating images into AWS...
 # Creating images into VMWare...
 # Creating images into VirtualBox...
+## pre-requisties:
+- packer
+- VirtualBox
+- Vagrant 
+
+Running the command:
+```
+packer build vbox-centos-7.x-x86_64.json
+```
+will build and provision a CentOS 7 VM for use with Virtual Box and Vagrant.
+Running the bash script run-packer-vbox-centos7.sh will do the same but will
+also add it to the local vagrant registry so that the newly created 
+image can be initialised and used locally.
+```
+...
+vagrant box remove ${VMNAME}
+vagrant box add ${VMNAME} VagrantReady/CentOS/virtualbox/centos-7.x.box
+vagrant box list
+vagrant init ${VMNAME}
+...
+
+```
+
+As part of the post provisioning , some examples and useful bash scripts for centos deployments exists in:
+```
+resources/centos/bash
+```
+That get run in the provision section of the packer json file, additional files or changes can be added here:
+```
+      "scripts": [
+        "resources/centos/bash/fix-slow-dns.sh",
+        "resources/centos/bash/sshd.sh",
+        "resources/centos/bash/disablefirewall.sh",
+        "resources/centos/bash/base-programs.sh",
+        "resources/centos/bash/vagrant.sh",
+        "resources/centos/bash/puppet.sh",
+        "resources/centos/bash/cleanup.sh",
+        "resources/centos/bash/minimize.sh"
+      ]
+```
